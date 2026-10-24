@@ -4,27 +4,44 @@
 #include "stm32f10x.h"
 
 /*==============================================================================
- * Buzzer.h —— 无源蜂鸣器驱动（S1）
+ * 文件：Buzzer.h
+ * 作用：蜂鸣器驱动（S1）—— 【有源蜂鸣器】版本，GPIO 开关控制 + 非阻塞节奏
+ * 平台：STM32F103C8T6，蜂鸣器 = PA8
  *----------------------------------------------------------------------------
- * 硬件：PA8 = TIM1_CH1，输出 PWM 方波（无源蜂鸣器必须给方波才会响）。
- *       改音调 = 改 PWM 频率；响/停 = 改占空比（50% / 0）。
+ * 一、有源蜂鸣器是什么
+ *   有源蜂鸣器内部自带振荡电路：只要给它通电就响，音调由它自己决定（固定）。
+ *   所以：
+ *     · 不需要 PWM、不需要定时器，GPIO 输出一个电平就能响/停
+ *     · 音调无法改变（软件改不了音高，只能改"响多久、响几声、间隔多久"）
  *
- * 用法（非阻塞）：
- *   Buzzer_Play(3, 120, 120, 2200);   // 响 3 声，每声 120ms，间隔 120ms，2200Hz
+ * 二、硬件接法（江协同款模块，低电平触发）
+ *   模块三针：VCC = 3.3V，GND = GND，I/O = PA8
+ *   模块上一般有一个三极管（PNP）：
+ *       PA8 输出【低电平】→ 三极管导通 → 蜂鸣器响
+ *       PA8 输出【高电平】→ 三极管截止 → 蜂鸣器停
+ *   ⚠ 如果烧录后发现"上电一直响 / 该响时不响"，说明模块是高电平触发：
+ *      把 Buzzer.c 里 Buzzer_WritePin 函数中的 Bit_RESET 和 Bit_SET 对调即可。
+ *
+ * 三、本工程用到的提示音（只调"声数 / 时长 / 间隔"）
+ *   启动     ：1 声长音（250ms）
+ *   按键     ：1 声短音（30ms）
+ *   停车/完成：3 短音（每声 120ms，间隔 120ms）
+ *   异常/超时：5 声急促（每声 70ms，间隔 70ms）
+ *
+ * 四、标准用法
+ *   Buzzer_Init();                    // 初始化 PA8，上电默认不响
+ *   Buzzer_Play(3, 120, 120);         // 响 3 声，每声 120ms，间隔 120ms（非阻塞）
  *   Buzzer_Tick1ms();                 // 每 1ms 调用一次，推进节奏
  *   Buzzer_Stop();                    // 立即静音
- *
- * 注意：TIM1 是高级定时器，初始化里必须调用 TIM_CtrlPWMOutputs() 打开主输出，
- *       否则 PA8 上永远没有波形（这是第一次用 TIM1 最容易踩的坑）。
  *============================================================================*/
 
-void    Buzzer_Init(void);
-void    Buzzer_On(void);						/* 开始发声（50% 占空比） */
-void    Buzzer_Off(void);						/* 停止发声（占空比 0） */
-void    Buzzer_SetFreq(uint16_t hz);			/* 设置音调 */
-void    Buzzer_Play(uint8_t count, uint16_t on_ms, uint16_t off_ms, uint16_t hz);
-void    Buzzer_Stop(void);						/* 立即静音并停止节奏 */
-void    Buzzer_Tick1ms(void);					/* 每 1ms 调用一次 */
-uint8_t Buzzer_IsBusy(void);					/* 1=还在响 */
+void    Buzzer_Init(void);			/* 初始化 PA8 为推挽输出，默认不响 */
+void    Buzzer_On(void);			/* 立即开始响（输出低电平） */
+void    Buzzer_Off(void);			/* 立即停止响（输出高电平） */
+void    Buzzer_Play(uint8_t count, uint16_t on_ms, uint16_t off_ms);
+									/* 播放节奏：响 count 声，每声 on_ms，间隔 off_ms */
+void    Buzzer_Stop(void);			/* 立即静音并终止节奏播放 */
+void    Buzzer_Tick1ms(void);		/* 节奏推进，必须每 1ms 调用一次 */
+uint8_t Buzzer_IsBusy(void);		/* 1=还在播放节奏，0=空闲 */
 
 #endif
