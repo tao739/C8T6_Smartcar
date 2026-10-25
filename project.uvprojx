@@ -805,11 +805,6 @@
               <FileType>5</FileType>
               <FilePath>.\User\stm32f10x_it.h</FilePath>
             </File>
-            <File>
-              <FileName>mians2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\mians2.c</FilePath>
-            </File>
           </Files>
         </Group>
       </Groups>

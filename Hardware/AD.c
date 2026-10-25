@@ -1,17 +1,19 @@
-﻿#include "stm32f10x.h"                  // Device header
+#include "stm32f10x.h"                  // Device header
 
 /*
- * 已确认实物：STM32F103VET6（LQFP100）
+ * C8T6 临时测试版（VET6 工程保持原样）
  *
- * 按原理图接：
+ * C8T6 没有 PC0，所以：
  *   D1~D7 -> PA1~PA7 -> ADC1_IN1~IN7
- *   D8     -> PC0     -> ADC1_IN10
- *   IR     -> PB1     -> 普通GPIO输出，高电平使能
+ *   D8     -> PB1     -> ADC1_IN9
+ *   IR     -> 3.3V    -> 常高使能，不占用GPIO
+ *
+ * 测试完把线换回 VET6 接法时，直接用原来的 VET6 工程。
  */
-#define IR_D8_GPIO_CLK       RCC_APB2Periph_GPIOC
-#define IR_D8_GPIO_PORT      GPIOC
-#define IR_D8_GPIO_PIN       GPIO_Pin_0
-#define IR_D8_ADC_CHANNEL    ADC_Channel_10
+#define IR_D8_GPIO_CLK       RCC_APB2Periph_GPIOB
+#define IR_D8_GPIO_PORT      GPIOB
+#define IR_D8_GPIO_PIN       GPIO_Pin_1
+#define IR_D8_ADC_CHANNEL    ADC_Channel_9
 
 volatile uint16_t AD_Value[8];			//DMA会直接改这个数组，必须加volatile
 
@@ -20,8 +22,8 @@ volatile uint16_t AD_Value[8];			//DMA会直接改这个数组，必须加volati
   * 参    数：无
   * 返 回 值：无
   * 说    明：D1~D7 -> PA1~PA7 -> ADC1_IN1~IN7
-  *           D8     -> PC0      -> ADC1_IN10
-  *           IR     -> PB1      -> 普通GPIO输出，高电平使能
+  *           D8     -> PB1      -> ADC1_IN9
+  *           IR     -> 3.3V     -> 常高使能
   */
 void AD_Init(void)
 {
@@ -43,7 +45,7 @@ void AD_Init(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);					//PA1~PA7初始化为模拟输入
 	
 	GPIO_InitStructure.GPIO_Pin = IR_D8_GPIO_PIN;
-	GPIO_Init(IR_D8_GPIO_PORT, &GPIO_InitStructure);		//D8初始化为模拟输入（PC0）
+	GPIO_Init(IR_D8_GPIO_PORT, &GPIO_InitStructure);		//D8初始化为模拟输入（PB1）
 	
 	/*规则组通道配置*/
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 1, ADC_SampleTime_55Cycles5);	//D1 -> PA1
@@ -53,7 +55,7 @@ void AD_Init(void)
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_5, 5, ADC_SampleTime_55Cycles5);	//D5 -> PA5
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_6, 6, ADC_SampleTime_55Cycles5);	//D6 -> PA6
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_7, 7, ADC_SampleTime_55Cycles5);	//D7 -> PA7
-	ADC_RegularChannelConfig(ADC1, IR_D8_ADC_CHANNEL, 8, ADC_SampleTime_55Cycles5);	//D8 -> PC0
+	ADC_RegularChannelConfig(ADC1, IR_D8_ADC_CHANNEL, 8, ADC_SampleTime_55Cycles5);	//D8 -> PB1
 	
 	/*ADC初始化*/
 	ADC_InitTypeDef ADC_InitStructure;											//定义结构体变量
