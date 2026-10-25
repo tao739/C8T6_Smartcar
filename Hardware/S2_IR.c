@@ -1,8 +1,8 @@
-﻿#include "S2_IR.h"
+#include "S2_IR.h"
 #include "AD.h"
 
 /*
- * 11mm 高度、C8T6 测试板的阈值。
+6 * 11mm 高度、C8T6 测试板的阈值。
  * 黑线 = raw 变大；每路用自己的阈值，不用全局阈值。
  */
 static const uint16_t k_threshold[S2_IR_COUNT] = {

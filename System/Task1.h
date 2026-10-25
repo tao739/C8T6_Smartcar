@@ -1,4 +1,4 @@
-﻿#ifndef __TASK1_H
+#ifndef __TASK1_H
 #define __TASK1_H
 
 #include "stm32f10x.h"

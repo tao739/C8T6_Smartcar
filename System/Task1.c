@@ -1,4 +1,4 @@
-﻿#include "Task1.h"
+#include "Task1.h"
 #include "S2_IR.h"
 
 static Task1_State s_state;

@@ -1,4 +1,4 @@
-﻿#ifndef __S2_IR_H
+#ifndef __S2_IR_H
 #define __S2_IR_H
 
 #include "stm32f10x.h"
